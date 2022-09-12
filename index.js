@@ -42,6 +42,23 @@ app.post('/products', async (req, res) => {
   });
 });
 
+app.put('/products/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  let chunks = '';
+  req.on('data', (chunk) => (chunks += chunk));
+  req.on('end', async () => {
+    const product = {
+      id: id,
+      ...JSON.parse(chunks),
+    };
+    const products = await readFile('./data.json');
+    const index = products.findIndex(product => product.id === id);
+    products.splice(index, 1, product);
+    await writeFile('./data.json', JSON.stringify(products));
+    res.end();
+  });
+});
+
 app.delete('/products/:uid', async (req, res) => {
   const id = Number(req.params.uid);
   const products = await readFile('./data.json');
